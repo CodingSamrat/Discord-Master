@@ -1,7 +1,8 @@
+import os
+import time
 import discord
 from discord.ext import commands
-import time
-
+from utils import LOG
 
 class Embed(commands.Cog):
     def __init__(self, client: commands.Bot) -> None:
@@ -9,11 +10,11 @@ class Embed(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("[SUCCESS] Cog: Embed is loaded successfully...")
+        LOG(self, LOG.SUCCESS, TEXT="Running successful")
 
     @commands.command()
     async def embed(self, ctx):
-        await ctx.send(f"Embeding...")
+        await ctx.send(f"Embedding...")
 
 
 async def setup(client):

@@ -27,8 +27,9 @@ async def load_cogs() -> None:
 
     :return: None
     """
+    cog_ignore_list = ["__init__.py", "utils.py"]
     for filename in os.listdir("DMaster/cogs"):
-        if filename == "__init__.py":
+        if filename in cog_ignore_list:
             continue
 
         if filename.endswith(".py"):

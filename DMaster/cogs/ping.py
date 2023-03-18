@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import time
+from utils import LOG
 
 
 class Ping(commands.Cog):
@@ -9,7 +10,7 @@ class Ping(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("[SUCCESS] Cog: Ping is loaded successfully...")
+        LOG(self, LOG.SUCCESS, TEXT="Running successful")
 
     @commands.command()
     async def ping(self, ctx):
