@@ -33,7 +33,7 @@ async def load_cogs() -> None:
             continue
 
         if filename.endswith(".py"):
-            await client.load_extension(f"cogs.{filename[:-3]}")
+            await client.load_extension(f"DMaster.cogs.{filename[:-3]}")
 
 
 async def main(token) -> None:
@@ -47,7 +47,7 @@ async def main(token) -> None:
         await client.start(token)
 
 
-if __name__ == "__main__":
+def boot():
     # Loading Bot Token & Other information
     load_dotenv()
     TOKEN = os.getenv('DISCORD_TOKEN')
@@ -55,3 +55,7 @@ if __name__ == "__main__":
 
     # Entrypoint
     asyncio.run(main(TOKEN))
+
+
+if __name__ == "__main__":
+    pass
