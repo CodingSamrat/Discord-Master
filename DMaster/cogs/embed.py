@@ -2,7 +2,8 @@ import os
 import time
 import discord
 from discord.ext import commands
-from utils import LOG
+from DMaster.cogs.utils import LOG
+
 
 class Embed(commands.Cog):
     def __init__(self, client: commands.Bot) -> None:
@@ -18,12 +19,5 @@ class Embed(commands.Cog):
 
 
 async def setup(client):
-    """
-    Setting up the `Cog`
-
-    :param client:
-    :return:
-    """
-
     await client.add_cog(Embed(client))
 

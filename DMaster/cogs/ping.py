@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import time
-from utils import LOG
+from DMaster.cogs.utils import LOG
 
 
 class Ping(commands.Cog):
