@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .idea
+cog_temp.py
 
 # C extensions
 *.so
