@@ -1,8 +1,5 @@
-import os
-import time
-import discord
 from discord.ext import commands
-from DMaster.cogs.utils import LOG
+from DMaster.utils import LOG
 
 
 class Embed(commands.Cog):
