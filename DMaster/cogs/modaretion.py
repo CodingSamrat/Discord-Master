@@ -7,13 +7,14 @@ class Moderation(commands.Cog):      # <- Change ->
     def __init__(self, client: commands.Bot) -> None:
         self.client = client
 
+    #: Bot Events
+    #:
     @commands.Cog.listener()
     async def on_ready(self):
         LOG(self, LOG.SUCCESS, TEXT="Running successful")
 
     #: write commands here
     #:
-
     #: Delete messages
     #:
     @commands.command()
@@ -62,9 +63,6 @@ class Moderation(commands.Cog):      # <- Change ->
         await ctx.send(embed=embed)
 
 
-
-
-# Setup Cog <->
 async def setup(client):
     await client.add_cog(Moderation(client))      # <- Change ->
 
