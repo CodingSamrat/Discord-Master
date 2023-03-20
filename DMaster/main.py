@@ -4,16 +4,49 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from DMaster.config import DEFAULT_PREFIX
+from DMaster.utils import LOG
+from DMaster.config import DEFAULT_CONFIG
+from DMaster.database import Collection
+from DMaster.database import get_collection
 
 __all__ = ("boot",)
 
-# Configuring Intents
+#: Configuring Intents
 intents = discord.Intents.default()
 intents.message_content = True
 
-# Initiating Bot
-client = commands.Bot(command_prefix=DEFAULT_PREFIX, intents=intents)
+
+def get_server_prefix(client, message) -> str:
+    guild_id = str(message.guild.id)
+    guild_name = str(message.guild.name)
+
+    #: Getting server data Collection
+    col_server = get_collection(Collection.SERVER_DATA)
+
+    #: Getting Server data
+    data = col_server.find({"guild_id": guild_id})
+
+    if data:
+        server_data = data[0]
+        prefix = server_data["config"]["prefix"]
+
+        return prefix
+
+    else:
+        server_data = {
+            "guild_id": guild_id,
+            "guild_name": guild_name,
+            "in_guild": True,
+            "config": DEFAULT_CONFIG
+        }
+
+        col_server.insert(server_data)
+
+        return DEFAULT_CONFIG["prefix"]
+
+
+#: Initiating Bot
+client = commands.Bot(command_prefix=get_server_prefix, intents=intents)
 
 
 #: -------------------
@@ -22,25 +55,62 @@ client = commands.Bot(command_prefix=DEFAULT_PREFIX, intents=intents)
 @client.event
 async def on_ready():
     print("[SUCCESS] Bot is running...")
-    print('Logged on as', client.user.name)
+    print('Logged on as', client.user.name, "\n")
 
 
 @client.event
 async def on_guild_join(guild: discord.Guild):
-    print(guild.name)
+
+    #: Getting server data Collection
+    col_server = get_collection(Collection.SERVER_DATA)
+
+    #: Collect Guild info
+    guild_id = str(guild.id)
+    guild_name = guild.name
+    in_guild = True
+    config = DEFAULT_CONFIG
+
+    #: Get server data from database
+    server_data = col_server.find({"guild_id": guild_id})
+
+    #: Check if data server data already exist
+    if server_data:
+        col_server.update({"in_guild": in_guild}, {"guild_id": guild_id})
+
+    else:
+        #: Insert Data into database
+        server_data = {
+            "guild_id": guild_id,
+            "guild_name": guild_name,
+            "in_guild": in_guild,
+            "config": config
+        }
+        #: writing to database
+        col_server.insert(server_data)
 
 
 @client.event
 async def on_guild_remove(guild: discord.Guild):
-    print(guild.name)
+
+    #: Getting server data Collection
+    col_server = get_collection(Collection.SERVER_DATA)
+
+    #: Collect Guild info
+    guild_id = str(guild.id)
+    in_guild = False
+    config = DEFAULT_CONFIG
+
+    #: Get server data from database
+    server_data = col_server.find({"guild_id": guild_id})[0]
+
+    # print(server_data)
+    #: Updating database
+    col_server.update({"config": config, "in_guild": in_guild}, {"guild_id": guild_id})
 
 
 async def load_cogs() -> None:
-    """
-    Loading `Cogs`
+    """ Loading `Cogs` """
 
-    :return: None
-    """
     cog_ignore_list = ["__init__.py", "utils.py"]
     for filename in os.listdir("DMaster/cogs"):
         if filename in cog_ignore_list:
@@ -62,12 +132,12 @@ async def main(token) -> None:
 
 
 def boot():
-    # Loading Bot Token & Other information
+    #: Loading Bot Token & Other information
     load_dotenv()
     TOKEN = os.getenv('DISCORD_TOKEN')
     GUILD = os.getenv('DISCORD_GUILD')
 
-    # Entrypoint
+    #: Entrypoint
     asyncio.run(main(TOKEN))
 
 
