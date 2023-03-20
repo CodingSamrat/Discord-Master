@@ -2,7 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
+# Manual
 .idea
+**/db
+
 cog_temp.py
 
 # C extensions
