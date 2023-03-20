@@ -2,10 +2,10 @@
 DATABASE = {
     "engine": "FoleXdb",
     "name": "dmaster",
-    "data_dir": "DMaster/data/db",
+    "data_dir": "DMaster/database/db",
     "mode": "",
 }
 
-DEFAULT_PREFIX = "dm/"
-
-
+DEFAULT_CONFIG = {
+    "prefix": "dm/"
+}
