@@ -1,15 +1,19 @@
 import os
-from dotenv import load_dotenv
+import asyncio
 import discord
 from discord.ext import commands
-import asyncio
+from dotenv import load_dotenv
+
+from DMaster.config import DEFAULT_PREFIX
+
+__all__ = ("boot",)
 
 # Configuring Intents
 intents = discord.Intents.default()
 intents.message_content = True
 
 # Initiating Bot
-client = commands.Bot(command_prefix="dm/", intents=intents)
+client = commands.Bot(command_prefix=DEFAULT_PREFIX, intents=intents)
 
 
 #: -------------------
@@ -18,7 +22,17 @@ client = commands.Bot(command_prefix="dm/", intents=intents)
 @client.event
 async def on_ready():
     print("[SUCCESS] Bot is running...")
-    print('Logged on as', client.user)
+    print('Logged on as', client.user.name)
+
+
+@client.event
+async def on_guild_join(guild: discord.Guild):
+    print(guild.name)
+
+
+@client.event
+async def on_guild_remove(guild: discord.Guild):
+    print(guild.name)
 
 
 async def load_cogs() -> None:
