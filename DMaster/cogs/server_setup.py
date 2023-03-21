@@ -2,6 +2,7 @@ from discord.ext import commands
 from discord.ext.commands.context import Context
 
 from DMaster.utils import LOG
+from DMaster.config import DEFAULT_CONFIG
 from DMaster.database import Collection
 from DMaster.database import get_collection
 
@@ -18,18 +19,30 @@ class ServerSetup(commands.Cog):
 
     #: write commands here
     #:
+    #: Resat all config
+    #:
+    @commands.command()
+    async def resetconfig(self, ctx: Context):
+        col_guild = get_collection(Collection.GUILD)
+        #: Collect Guild info
+        guild_id = str(ctx.guild.id)
+        config = DEFAULT_CONFIG
+
+        #: Updating database
+        col_guild.update({"config": config}, {"guild_id": guild_id})
+
     #: Setup Prefix
     #:
     @commands.command()
-    async def prefix(self, ctx: Context, new_prefix: str):
-        col_server = get_collection(Collection.SERVER_DATA)
+    async def setprefix(self, ctx: Context, new_prefix: str):
+        col_guild = get_collection(Collection.GUILD)
 
         #: Collect Guild info
-        guild_id = str(ctx.guild.id)
+        guild_id = ctx.guild.id
         prefix = new_prefix
 
         #: Get server data from database
-        data = col_server.find({"guild_id": guild_id})[0]
+        data = col_guild.find_one({"guild_id": guild_id})
 
         #: Get server configurations
         config = data["config"]
@@ -39,7 +52,7 @@ class ServerSetup(commands.Cog):
         config["prefix"] = prefix
 
         #: Updating database
-        col_server.update({"config": config}, {"guild_id": guild_id})
+        col_guild.update({"config": config}, {"guild_id": guild_id})
 
         await ctx.send(f"Server Prefix Changed by {ctx.author.mention}\n[{old_prefix}] -> {prefix}")
 

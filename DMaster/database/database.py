@@ -1,28 +1,23 @@
-from filexdb import FileXdb
-from DMaster.config import DATABASE
+import pymongo
 
 __all__ = ("Collection", "get_collection")
 
-db_name = DATABASE["name"]
-data_dir = DATABASE["data_dir"]
-mode = DATABASE["mode"]
+con_str = "mongodb+srv://the_sam963:Samrat.mongo.23@discordcluster.fgt0jov.mongodb.net/?retryWrites=true&w=majority"
+client = pymongo.MongoClient(con_str)
 
 
-def get_collection(coll_name: str):
-    DB = FileXdb(db_name=db_name, data_dir=data_dir, mode="json")
-    collection = DB.collection(coll_name)
+def get_collection(coll_name: str) :
+    #: Initiating Database
+    db = client["dmaster"]
+
+    #: Creating Collection
+    collection = db[coll_name]
+
     return collection
 
 
 class Collection:
-    SERVER_DATA = "server_data"
+    GUILD = "guild"
+    USER = "user"
 
 
-data = {
-    "guild_id": "guild_id",
-    "guild_name": "guild_name",
-    "in_guild": "in_guild",
-    "config": {
-        "prefix": "prefix"
-    }
-}

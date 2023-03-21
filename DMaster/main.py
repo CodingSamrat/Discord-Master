@@ -20,21 +20,20 @@ intents.message_content = True
 
 
 def get_server_prefix(client, message) -> str:
-    guild_id = str(message.guild.id)
-    guild_name = str(message.guild.name)
+    guild_id = message.guild.id
+    guild_name = message.guild.name
 
-    #: Getting server data Collection
-    col_server = get_collection(Collection.SERVER_DATA)
+    #: Getting Guild data Collection
+    col_guild = get_collection(Collection.GUILD)
 
     #: Getting Server data
-    data = col_server.find({"guild_id": guild_id})
+    server_data = col_guild.find_one({"guild_id": guild_id})
 
-    if data:
-        server_data = data[0]
+    if server_data:
+        #: Fetching Prefix
         prefix = server_data["config"]["prefix"]
 
         return prefix
-
     else:
         server_data = {
             "guild_id": guild_id,
@@ -43,7 +42,7 @@ def get_server_prefix(client, message) -> str:
             "config": DEFAULT_CONFIG
         }
 
-        col_server.insert(server_data)
+        col_guild.insert_one(server_data)
 
         return DEFAULT_CONFIG["prefix"]
 
@@ -65,20 +64,21 @@ async def on_ready():
 async def on_guild_join(guild: Guild):
 
     #: Getting server data Collection
-    col_server = get_collection(Collection.SERVER_DATA)
+    col_guild = get_collection(Collection.GUILD)
 
     #: Collect Guild info
-    guild_id = str(guild.id)
+    guild_id = guild.id
     guild_name = guild.name
     in_guild = True
     config = DEFAULT_CONFIG
 
     #: Get server data from database
-    server_data = col_server.find({"guild_id": guild_id})
+    server_data = col_guild.find_one({"guild_id": guild_id})
 
     #: Check if data server data already exist
     if server_data:
-        col_server.update({"in_guild": in_guild}, {"guild_id": guild_id})
+        # ({"in_guild": in_guild}, {"guild_id": guild_id})
+        col_guild.update_one()
 
     else:
         #: Insert Data into database
@@ -89,26 +89,24 @@ async def on_guild_join(guild: Guild):
             "config": config
         }
         #: writing to database
-        col_server.insert(server_data)
+        col_guild.insert(server_data)
 
 
 @client.event
 async def on_guild_remove(guild: Guild):
 
     #: Getting server data Collection
-    col_server = get_collection(Collection.SERVER_DATA)
+    col_guild = get_collection(Collection.GUILD)
 
     #: Collect Guild info
-    guild_id = str(guild.id)
+    guild_id = guild.id
     in_guild = False
-    config = DEFAULT_CONFIG
 
     #: Get server data from database
-    server_data = col_server.find({"guild_id": guild_id})[0]
+    server_data = col_guild.find_one({"guild_id": guild_id})
 
-    # print(server_data)
     #: Updating database
-    col_server.update({"config": config, "in_guild": in_guild}, {"guild_id": guild_id})
+    col_guild.update({"in_guild": in_guild}, {"guild_id": guild_id})
 
 
 async def load_cogs() -> None:
