@@ -1,5 +1,5 @@
-import discord
 from discord.ext import commands
+from discord.ext.commands.context import Context
 
 from DMaster.utils import LOG
 from DMaster.database import Collection
@@ -21,7 +21,7 @@ class ServerSetup(commands.Cog):
     #: Setup Prefix
     #:
     @commands.command()
-    async def prefix(self, ctx, new_prefix: str):
+    async def prefix(self, ctx: Context, new_prefix: str):
         col_server = get_collection(Collection.SERVER_DATA)
 
         #: Collect Guild info

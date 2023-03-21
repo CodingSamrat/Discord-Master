@@ -1,8 +1,11 @@
 import os
 import asyncio
-import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+from discord import (
+    Intents,
+    Guild
+)
 
 from DMaster.utils import LOG
 from DMaster.config import DEFAULT_CONFIG
@@ -12,7 +15,7 @@ from DMaster.database import get_collection
 __all__ = ("boot",)
 
 #: Configuring Intents
-intents = discord.Intents.default()
+intents = Intents.default()
 intents.message_content = True
 
 
@@ -59,7 +62,7 @@ async def on_ready():
 
 
 @client.event
-async def on_guild_join(guild: discord.Guild):
+async def on_guild_join(guild: Guild):
 
     #: Getting server data Collection
     col_server = get_collection(Collection.SERVER_DATA)
@@ -90,7 +93,7 @@ async def on_guild_join(guild: discord.Guild):
 
 
 @client.event
-async def on_guild_remove(guild: discord.Guild):
+async def on_guild_remove(guild: Guild):
 
     #: Getting server data Collection
     col_server = get_collection(Collection.SERVER_DATA)

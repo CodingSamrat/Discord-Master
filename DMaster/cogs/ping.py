@@ -1,4 +1,6 @@
 from discord.ext import commands
+from discord.ext.commands.context import Context
+
 from DMaster.utils import LOG
 
 
@@ -17,8 +19,9 @@ class Ping(commands.Cog):
     #: Ping
     #:
     @commands.command()
-    async def ping(self, ctx):
+    async def ping(self, ctx: Context):
         await ctx.send(f"Bot latency - {self.client.latency * 1000} ms")
+
 
 
 async def setup(client):

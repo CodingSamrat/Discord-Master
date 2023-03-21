@@ -1,4 +1,5 @@
 from discord.ext import commands
+from discord.ext.commands.context import Context
 from DMaster.utils import LOG
 
 
@@ -17,7 +18,7 @@ class Embed(commands.Cog):
     #: Embed Message
     #:
     @commands.command()
-    async def embed(self, ctx):
+    async def embed(self, ctx: Context):
         await ctx.send(f"Embedding...")
 
 
