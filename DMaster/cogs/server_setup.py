@@ -4,6 +4,7 @@ from discord.ext.commands.context import Context
 from DMaster.utils import LOG
 from DMaster.database import Collection
 from DMaster.database import get_collection
+from DMaster.config import DEFAULT_CONFIG
 
 
 class ServerSetup(commands.Cog):
@@ -21,15 +22,15 @@ class ServerSetup(commands.Cog):
     #: Setup Prefix
     #:
     @commands.command()
-    async def prefix(self, ctx: Context, new_prefix: str):
-        col_server = get_collection(Collection.SERVER_DATA)
+    async def setprefix(self, ctx: Context, new_prefix: str):
+        col_guild = get_collection(Collection.GUILD)
 
         #: Collect Guild info
         guild_id = str(ctx.guild.id)
         prefix = new_prefix
 
         #: Get server data from database
-        data = col_server.find({"guild_id": guild_id})[0]
+        data = col_guild.find({"guild_id": guild_id})[0]
 
         #: Get server configurations
         config = data["config"]
@@ -39,9 +40,22 @@ class ServerSetup(commands.Cog):
         config["prefix"] = prefix
 
         #: Updating database
-        col_server.update({"config": config}, {"guild_id": guild_id})
+        col_guild.update({"config": config}, {"guild_id": guild_id})
 
-        await ctx.send(f"Server Prefix Changed by {ctx.author.mention}\n[{old_prefix}] -> {prefix}")
+        await ctx.send(f"Server Prefix Changed by {ctx.author.mention}\n[{old_prefix} -> {prefix}]")
+
+    #: Setup Prefix
+    #:
+    @commands.command()
+    async def resetconfig(self, ctx: Context):
+        col_guild = get_collection(Collection.GUILD)
+
+        #: Collect Guild info
+        guild_id = str(ctx.guild.id)
+
+        col_guild.update({"config": DEFAULT_CONFIG}, {"guild_id": guild_id})
+
+        await ctx.send(f"All Server Configuration Reset to Default...")
 
 
 async def setup(client):
