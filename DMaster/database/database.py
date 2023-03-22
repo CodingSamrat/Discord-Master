@@ -15,7 +15,8 @@ def get_collection(coll_name: str):
 
 
 class Collection:
-    SERVER_DATA = "server_data"
+    GUILD = "guild"
+    USER = "user"
 
 
 data = {
