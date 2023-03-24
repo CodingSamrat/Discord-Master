@@ -18,7 +18,7 @@ class Moderation(commands.Cog):      # <- Change ->
     #:
     @commands.Cog.listener()
     async def on_ready(self):
-        LOG.success(TEXT=f"Cog - `{self.__class__.__name__}` is running successfully")
+        LOG.success(TEXT=f"Cog - {self.__class__.__name__} is running successfully")
 
     #: write commands here
     #:

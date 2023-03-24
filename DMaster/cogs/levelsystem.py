@@ -12,92 +12,118 @@ from discord import (
 )
 
 
+def get_new_guild(guild_id, guild_name):
+    new_guild = {
+        "guild_id": guild_id,
+        "guild_name": guild_name,
+        "guild_lvl": 1,
+        "guild_exp": 0
+    }
+
+
+def get_user(users, user_id, user_name, guild_id, guild_name) -> tuple[dict, bool]:
+    new_guild = {
+        "guild_id": guild_id,
+        "guild_name": guild_name,
+        "guild_lvl": 1,
+        "guild_exp": 0
+    }
+
+    if users:
+        user: dict = users
+
+        return user, False
+    else:
+        user = {
+            "_id": user_id,
+            "user_name": user_name,
+            "guilds": {
+                f"{guild_id}": new_guild,
+            }
+        }
+
+        return user, True
+
+
 class LevelSystem(commands.Cog):
     def __init__(self, client: commands.Bot) -> None:
 
         #: Initiating database (user) collection
-        self.col_users = get_collection(Collection.USERS)
+        self.col_users = get_collection(Collection.USER)
 
         self.client = client
-
-    def new_guild(self, guild_id) -> dict:
-        guild = dict()
-        guild["guild_id"] = guild_id
-        guild["guild_lvl"] = 1
-        guild["guild_exp"] = 0
-        return guild
-    def level_up(self, guild_id: int, guilds: list) -> tuple[bool, list]:
-
-        #: Iterate all guild of user
-        for guild in guilds:
-            if guild["guild_id"] == guild_id:
-
-                #: Set Guild data
-                if guild["guild_exp"] >= math.ceil(9 * (guild["guild_lvl"] ** 4) / 2.3):
-                    guild["guild_lvl"] += 1
-                    return True, guilds
-                else:
-                    return False, guilds
 
     #: Bot Events
     #:
     @commands.Cog.listener()
     async def on_ready(self):
-        LOG.success(TEXT=f"Cog - `{self.__class__.__name__}` is running successfully")
+        LOG.success(TEXT=f"Cog - {self.__class__.__name__} is running successfully")
 
     @commands.Cog.listener()
     async def on_message(self, message: Context):
         if message.author.id == self.client.user.id:
             return
 
-        user_id = message.author.id
-        guild_id = message.guild.id
+        #: Initiating database (user) collection
+        col_users = get_collection(Collection.USER)
 
-        users = self.col_users.find({"user_id": user_id})
-        user = dict()
+        user_id = str(message.author.id)
+        user_name = message.author.name
+        guild_id = str(message.guild.id)
+        guild_name = message.guild.name
 
-        if users:
-            user = users[0]
+        col_users = get_collection(Collection.USER)
+        users = col_users.find_one({"_id": user_id})
+
+        user, is_new = get_user(users, user_id, user_name, guild_id, guild_name)
+        user_guilds: dict = user["guilds"]
+
+        #: Insert user into the database if it is new.
+        if is_new:
+            await get_collection(Collection.USER).insert_one(user)
+
         else:
-            user["user_id"] = user_id
-            user["guilds"] = []
+            #: If it is any new guild or existing one
+            if guild_id not in user_guilds.keys():
+                new_guild = {
+                    "guild_id": guild_id,
+                    "guild_name": guild_name,
+                    "guild_lvl": 1,
+                    "guild_exp": 0
+                }
+                user_guilds[guild_id] = new_guild
+                await message.channel.send("new guild found")
 
-            user["guilds"].append(self.new_guild(guild_id))
+        rand_exp = random.randint(3, 9)
+        user_guilds[guild_id]["guild_exp"] += rand_exp
 
-            self.col_users.insert(user)
-
-        user_guilds = user["guilds"]
-        EXP = random.randint(3, 9)
-
-        for guild in user_guilds:
-            if guild["guild_id"] == guild_id:
-                guild["guild_exp"] += EXP
+        current_lvl = user_guilds[guild_id]["guild_lvl"]
+        current_exp = user_guilds[guild_id]["guild_exp"]
 
         #: Checking if level up
-        is_level_up, guilds = self.level_up(guild_id, user_guilds)
-        guild_list = []
-        if is_level_up:
-            for guild in guilds:
-                guild_list.append(guild_id)
+        if current_exp >= math.ceil(6 * (current_lvl ** 4) / 2.1):
+            user_guilds[guild_id]["guild_lvl"] += 1
+            await message.channel.send("LEVEL UP!")
 
-                if guild["guild_id"] == guild_id:
-                    await message.channel.send(f"Level -> {guild['guild_lvl']}\nExp -> {guild['guild_exp']}")
-
-        if guild_id not in guilds:
-            user_guilds.append(self.new_guild(guild_id))
-
-        get_collection(Collection.USERS).update({"guilds": user_guilds}, {"user_id": user_id})
-
-        # await LOG.success(TEXT=f"[{ccc}] -> {message}")
-        await message.channel.send(f"{self.col_users.find().prettify()}")
+        await col_users.update_one({"_id": user_id}, {"$set": {"guilds": user_guilds}})
 
     #: write commands here
     #:
     #: Level
     #:
     @commands.command(aliases=["rank", "lvl"])
-    async def level(self, ctx: Context, user: User | None):
-        await ctx.send(f"___ {user}")
+    async def level(self, ctx: Context, user: User = None):
+        user_id = str(ctx.author.id)
+        guild_id = str(ctx.guild.id)
+
+        if user is not None:
+            user_id = str(user.id)
+
+        user = get_collection(Collection.USER).find({"_id": user_id})[0]
+        lvl = user["guilds"][guild_id]["guild_lvl"]
+        exp = user["guilds"][guild_id]["guild_exp"]
+
+        await ctx.send(f"___ user.mention ___\n - [L] {lvl} \n - [E] {exp}")
 
 
 async def setup(client):

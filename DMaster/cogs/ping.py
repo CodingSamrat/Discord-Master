@@ -12,7 +12,7 @@ class Ping(commands.Cog):
     #:
     @commands.Cog.listener()
     async def on_ready(self):
-        LOG.success(TEXT=f"Cog - `{self.__class__.__name__}` is running successfully")
+        LOG.success(TEXT=f"Cog - {self.__class__.__name__} is running successfully")
 
     #: write commands here
     #:
@@ -20,7 +20,7 @@ class Ping(commands.Cog):
     #:
     @commands.command()
     async def ping(self, ctx: Context):
-        await ctx.send(f"Bot latency - {self.client.latency * 1000} ms")
+        await ctx.send(f"Bot latency - {round(self.client.latency * 1000)} ms")
 
 
 

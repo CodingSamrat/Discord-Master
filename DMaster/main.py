@@ -20,14 +20,14 @@ intents.message_content = True
 
 
 def get_server_prefix(client, message) -> str:
-    guild_id = message.guild.id
+    guild_id = str(message.guild.id)
     guild_name = message.guild.name
 
     #: Getting Guild data Collection
     col_guild = get_collection(Collection.GUILD)
 
     #: Getting Server data
-    server_data = col_guild.find_one({"guild_id": guild_id})
+    server_data = col_guild.find_one({"_id": guild_id})
 
     if server_data:
         #: Fetching Prefix
@@ -36,7 +36,7 @@ def get_server_prefix(client, message) -> str:
         return prefix
     else:
         server_data = {
-            "guild_id": guild_id,
+            "_id": guild_id,
             "guild_name": guild_name,
             "in_guild": True,
             "config": DEFAULT_CONFIG
@@ -67,23 +67,23 @@ async def on_guild_join(guild: Guild):
     col_guild = get_collection(Collection.GUILD)
 
     #: Collect Guild info
-    guild_id = guild.id
+    guild_id = str(guild.id)
     guild_name = guild.name
     in_guild = True
     config = DEFAULT_CONFIG
 
     #: Get server data from database
-    server_data = col_guild.find_one({"guild_id": guild_id})
+    server_data = col_guild.find_one({"_id": guild_id})
 
     #: Check if data server data already exist
     if server_data:
         # ({"in_guild": in_guild}, {"guild_id": guild_id})
-        col_guild.update_one()
+        col_guild.update_one({"_id": guild_id}, {"$set": {"in_guild": in_guild}})
 
     else:
         #: Insert Data into database
         server_data = {
-            "guild_id": guild_id,
+            "_id": guild_id,
             "guild_name": guild_name,
             "in_guild": in_guild,
             "config": config
@@ -99,14 +99,11 @@ async def on_guild_remove(guild: Guild):
     col_guild = get_collection(Collection.GUILD)
 
     #: Collect Guild info
-    guild_id = guild.id
+    guild_id = str(guild.id)
     in_guild = False
 
-    #: Get server data from database
-    server_data = col_guild.find_one({"guild_id": guild_id})
-
     #: Updating database
-    col_guild.update({"in_guild": in_guild}, {"guild_id": guild_id})
+    col_guild.update_one({"_id": guild_id}, {"$set": {"in_guild": in_guild}})
 
 
 async def load_cogs() -> None:
