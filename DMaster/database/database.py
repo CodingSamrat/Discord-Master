@@ -1,12 +1,18 @@
+import os
 import pymongo
+from dotenv import load_dotenv
 
 __all__ = ("Collection", "get_collection")
 
-con_str = "mongodb+srv://the_sam963:Samrat.mongo.23@discordcluster.fgt0jov.mongodb.net/?retryWrites=true&w=majority"
+#: Load Environment Variable 
+load_dotenv()
+con_str = os.getenv('MONGO_URL')
+
+#: Make connection
 client = pymongo.MongoClient(con_str)
 
 
-def get_collection(coll_name: str) :
+def get_collection(coll_name: str):
     #: Initiating Database
     db = client["dmaster"]
 
