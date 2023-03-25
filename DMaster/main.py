@@ -17,6 +17,8 @@ __all__ = ("boot",)
 #: Configuring Intents
 intents = Intents.default()
 intents.message_content = True
+intents.members = True
+intents.auto_moderation =True
 
 
 def get_server_prefix(client, message) -> str:
@@ -47,7 +49,7 @@ def get_server_prefix(client, message) -> str:
         return DEFAULT_CONFIG["prefix"]
 
 
-#: Initiating Bot
+#: Initiating Bot < ------------------------------------------------------------- >
 client = commands.Bot(command_prefix=get_server_prefix, intents=intents)
 
 
@@ -89,7 +91,7 @@ async def on_guild_join(guild: Guild):
             "config": config
         }
         #: writing to database
-        col_guild.insert(server_data)
+        col_guild.insert_one(server_data)
 
 
 @client.event
@@ -109,9 +111,10 @@ async def on_guild_remove(guild: Guild):
 async def load_cogs() -> None:
     """ Loading `Cogs` """
 
-    cog_ignore_list = ["__init__.py", "utils.py"]
+    cog_ignore_list = ["__init__.py", "_welcome.py"]
     for filename in os.listdir("DMaster/cogs"):
         if filename in cog_ignore_list:
+            LOG.warning(TEXT=f"{filename} - ignored")
             continue
 
         if filename.endswith(".py"):
