@@ -1,9 +1,10 @@
-
-
 import random
 import os
+
 from DMaster.utils import LOG
-from DMaster.database import Collection, get_collection
+from DMaster.utils import get_user_guilds
+from DMaster.database import Collection
+from DMaster.database import get_collection
 
 from discord.ext import commands
 from discord.ext.commands.context import Context
@@ -22,35 +23,6 @@ from easy_pil import (
 
 def get_rand_exp() -> int:
     return random.randint(1, 3)
-
-
-def get_new_guild(guild_id, guild_name):
-    new_guild = {
-        "guild_name": guild_name,
-        "guild_lvl": 1,
-        "guild_exp": 0,
-        "next_exp": 30
-    }
-
-    return new_guild
-
-
-def get_user(users, user_id, user_name, guild_id, guild_name) -> tuple[dict, bool]:
-
-    if users:
-        user: dict = users
-
-        return user, False
-    else:
-        user = {
-            "_id": user_id,
-            "user_name": user_name,
-            "guilds": {
-                f"{guild_id}": get_new_guild(guild_id, guild_name),
-            }
-        }
-
-        return user, True
 
 
 class LevelSystem(commands.Cog):
@@ -83,17 +55,7 @@ class LevelSystem(commands.Cog):
         col_users = get_collection(Collection.USER)
         users = col_users.find_one({"_id": user_id})
 
-        user, is_new = get_user(users, user_id, user_name, guild_id, guild_name)
-        user_guilds: dict = user["guilds"]
-
-        #: Insert user into the database if it is new.
-        if is_new:
-            get_collection(Collection.USER).insert_one(user)
-
-        else:
-            #: If it is any new guild or existing one
-            if guild_id not in user_guilds.keys():
-                user_guilds[guild_id] = get_new_guild(guild_id, guild_name)
+        user_guilds = get_user_guilds(users, user_id, user_name, guild_id, guild_name)
 
         rand_exp = get_rand_exp()
         user_guilds[guild_id]["guild_exp"] += rand_exp
