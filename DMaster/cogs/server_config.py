@@ -7,7 +7,7 @@ from DMaster.database import Collection
 from DMaster.database import get_collection
 
 
-class ServerSetup(commands.Cog):
+class ServerConfig(commands.Cog):
     def __init__(self, client: commands.Bot) -> None:
         self.client = client
 
@@ -15,7 +15,7 @@ class ServerSetup(commands.Cog):
     #:
     @commands.Cog.listener()
     async def on_ready(self):
-        LOG.success(TEXT=f"Cog - {self.__class__.__name__} is running successfully")
+        LOG.Cog.success(self)
 
     #: write commands here
     #:
@@ -58,5 +58,5 @@ class ServerSetup(commands.Cog):
 
 
 async def setup(client):
-    await client.add_cog(ServerSetup(client))
+    await client.add_cog(ServerConfig(client))
 
