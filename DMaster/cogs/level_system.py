@@ -152,32 +152,34 @@ class LevelSystem(commands.Cog):
 
         #: Creating Bg
         #: Main Background
-
-        background = Editor(Canvas((900, 300), color="#131519"))
+        main_w = 900
+        main_h = 300
+        background = Editor(Canvas((main_w, main_h), color="#131519"))
         background.blend(img, .30, True)
 
-        avator_url = await load_image_async(str(member.avatar.url))
-        avator = Editor(avator_url).resize((150, 150)).circle_image()
+        avatar_size = 200
+        avatar_url = await load_image_async(str(member.avatar.url))
+        avatar = Editor(avatar_url).resize((avatar_size, avatar_size)).circle_image()
 
         poppins = Font.poppins(size=40)
         poppins_small = Font.poppins(size=30)
 
         #: Right Polygon
-        card_right_shape = [(600, 0), (750, 300), (900, 300), (900, 0)]
-        background.polygon(card_right_shape, color="#bedbff")
+        # card_right_shape = [(600, 0), (750, 300), (900, 300), (900, 0)]
+        # background.polygon(card_right_shape, color="#bedbff")
+        background.paste(avatar, (30, 50))
 
-        background.paste(avator, (30, 30))
-
+        left_align_pos = 280
         #: Progress Bar
-        background.rectangle((30, 220), width=650, height=40, color="#FFFFFF", radius=20)
-        background.bar((30, 220), max_width=650, height=40, color="#21252b", percentage=percentage, radius=20, outline=(255, 255, 255, 90))
+        background.rectangle((left_align_pos, 220), width=590, height=40, color="#decfbf", radius=20)
+        background.bar((left_align_pos, 220), max_width=590, height=40, color="#2b303a", percentage=percentage, radius=20, outline=(255, 255, 255, 90))
 
         #: Main info
         text_color = "#FFFFFF"
-        background.text((200, 40), user_name, font=poppins, color=text_color)
-        background.rectangle((200, 100), width=350, height=2, fill=text_color)
-        background.text((200, 125), f"Level - {current_lvl}", font=poppins_small, color=text_color)
-        background.text((200, 160), f"XP - {current_exp}/{next_exp}", font=poppins_small, color=text_color)
+        background.text((left_align_pos, 40), user_name, font=poppins, color=text_color)
+        background.rectangle((left_align_pos, 100), width=350, height=2, fill=text_color)
+        background.text((left_align_pos, 125), f"Level - {current_lvl}", font=poppins_small, color=text_color)
+        background.text((left_align_pos, 160), f"XP - {current_exp}/{next_exp}", font=poppins_small, color=text_color)
 
         #: Generate discord file
         file = File(fp=background.image_bytes, filename=f"lvl-card_{member.name}-{member.discriminator}.png")
