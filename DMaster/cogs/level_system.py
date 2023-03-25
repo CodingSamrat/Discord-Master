@@ -5,19 +5,14 @@ from DMaster.utils import LOG
 from DMaster.utils import get_user_guilds
 from DMaster.database import Collection
 from DMaster.database import get_collection
+from DMaster.cards import level_card
+
+from easy_pil import load_image_async
 
 from discord.ext import commands
 from discord.ext.commands.context import Context
 from discord import (
-    User,
-    File
-)
-
-from easy_pil import (
-    Editor,
-    Canvas,
-    Font,
-    load_image_async
+    User
 )
 
 
@@ -100,52 +95,14 @@ class LevelSystem(commands.Cog):
 
         user = get_collection(Collection.USER).find_one({"_id": user_id})
 
-        user_name = f"{member.name}#{member.discriminator}"
-        current_lvl = user["guilds"][guild_id]["guild_lvl"]
-        current_exp = user["guilds"][guild_id]["guild_exp"]
-        next_exp = user["guilds"][guild_id]["next_exp"]
-        percentage = ((current_exp / next_exp) * 100)
-
-        #: Creating Card
-        #: Accessing Background Image
-        bg_images = os.listdir("DMaster/img/card-bg/")
-        bg_image = random.choice(bg_images)
-        img = Editor(f"DMaster/img/card-bg/{bg_image}")
-
-        #: Creating Bg
-        #: Main Background
-        main_w = 900
-        main_h = 300
-        background = Editor(Canvas((main_w, main_h), color="#131519"))
-        background.blend(img, .30, True)
-
-        avatar_size = 200
+        #: Generate card
         avatar_url = await load_image_async(str(member.avatar.url))
-        avatar = Editor(avatar_url).resize((avatar_size, avatar_size)).circle_image()
+        try:
+            file = level_card(member, user, guild_id, avatar_url)
+            await ctx.send(file=file)
+        except Exception as e:
+            print(e)
 
-        poppins = Font.poppins(size=40)
-        poppins_small = Font.poppins(size=30)
-
-        #: Right Polygon
-        # card_right_shape = [(600, 0), (750, 300), (900, 300), (900, 0)]
-        # background.polygon(card_right_shape, color="#bedbff")
-        background.paste(avatar, (30, 50))
-
-        left_align_pos = 280
-        #: Progress Bar
-        background.rectangle((left_align_pos, 220), width=590, height=40, color="#decfbf", radius=20)
-        background.bar((left_align_pos, 220), max_width=590, height=40, color="#2b303a", percentage=percentage, radius=20, outline=(255, 255, 255, 90))
-
-        #: Main info
-        text_color = "#FFFFFF"
-        background.text((left_align_pos, 40), user_name, font=poppins, color=text_color)
-        background.rectangle((left_align_pos, 100), width=350, height=2, fill=text_color)
-        background.text((left_align_pos, 125), f"Level - {current_lvl}", font=poppins_small, color=text_color)
-        background.text((left_align_pos, 160), f"XP - {current_exp}/{next_exp}", font=poppins_small, color=text_color)
-
-        #: Generate discord file
-        file = File(fp=background.image_bytes, filename=f"lvl-card_{member.name}-{member.discriminator}.png")
-        await ctx.send(file=file)
 
 
 async def setup(client):
