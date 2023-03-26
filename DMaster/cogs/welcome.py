@@ -1,13 +1,12 @@
-import discord.utils
-
 from DMaster.utils import LOG
 from DMaster.utils import get_user_guilds
+from DMaster.utils import get_status
 from DMaster.database import Collection
 from DMaster.database import get_collection
 
+import discord
 from discord.ext import commands
 from discord.ext.commands.context import Context
-from discord import (Member,)
 
 
 class Welcome(commands.Cog):
@@ -31,7 +30,7 @@ class Welcome(commands.Cog):
     #: When a member join the server
     #:
     @commands.Cog.listener()
-    async def on_member_join(self, member: Member):
+    async def on_member_join(self, member: discord.Member):
         channel = member.guild.system_channel
         user_id = str(member.id)
         user_name = member.name
@@ -84,11 +83,101 @@ class Welcome(commands.Cog):
     #:
     #: welcome
     #:
-    @commands.command()
+    @commands.group(name="welcome", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
     async def welcome(self, ctx: Context):
-        await ctx.send("welcome...")
+        guild_id = str(ctx.guild.id)
+        query = {"_id": guild_id}
+
+        #: Initiate database
+        col_guild = get_collection(Collection.GUILD)
+
+        #: Fetching database
+        guild = col_guild.find_one(query)
+
+        #: Guild Configuration
+        guild_config = guild["config"]
+        guild_config["welcome"] = True
+
+        guild_welcome = {
+            "channel_id": "234354365765",
+            "channel_name": "Welcome",
+            "msg": "Lets make game"
+        }
+
+        col_guild.update_one(query, {"$set": {"config": guild_config, "welcome": guild_welcome}})
+        await ctx.send(">>> Welcome message settings updated")
+
+    @welcome.command()
+    @commands.has_permissions(administrator=True)
+    async def enable(self, ctx: Context):
+        guild_id = str(ctx.guild.id)
+        query = {"_id": guild_id}
+
+        #: Initiate database
+        col_guild = get_collection(Collection.GUILD)
+
+        #: Fetching database
+        guild = col_guild.find_one(query)
+
+        #: Guild Configuration
+        guild_config = guild["config"]
+        guild_config["welcome"] = True
+
+        get_collection(Collection.GUILD).update_one(query, {"$set": {"config": guild_config}})
+        await ctx.send(">>> Welcome msg enabled successfully")
+
+    @welcome.command()
+    @commands.has_permissions(administrator=True)
+    async def disable(self, ctx: Context):
+        guild_id = str(ctx.guild.id)
+        query = {"_id": guild_id}
+
+        #: Initiate database
+        col_guild = get_collection(Collection.GUILD)
+
+        #: Fetching database
+        guild = col_guild.find_one(query)
+
+        #: Guild Configuration
+        guild_config = guild["config"]
+        guild_config["welcome"] = False
+
+        get_collection(Collection.GUILD).update_one(query, {"$set": {"config": guild_config}})
+
+        await ctx.send(">>> Welcome msg disabled successfully")
+
+    @welcome.command()
+    @commands.has_permissions(administrator=True)
+    async def status(self, ctx: Context):
+        guild_id = str(ctx.guild.id)
+        query = {"_id": guild_id}
+
+        #: Initiate database
+        col_guild = get_collection(Collection.GUILD)
+
+        #: Fetching database
+        guild = col_guild.find_one(query)
+
+        #: Guild Configuration
+        guild_config = guild["config"]
+        guild_welcome = guild["welcome"]
+
+        msg = f"""
+```
+Welcome message - {ctx.guild.name}.
+
+    - Status: {get_status(guild_config["welcome"])}
+    - Channel Name: {guild_welcome["channel_name"]}
+    - Channel ID: {guild_welcome["channel_id"]}
+    - Message: {guild_welcome["msg"]}
+```
+            """
+
+        await ctx.send(msg)
+
+
 
 
 async def setup(client):
     await client.add_cog(Welcome(client))
-
