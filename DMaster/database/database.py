@@ -9,7 +9,7 @@ load_dotenv()
 con_str = os.getenv('MONGO_URL')
 
 #: Make connection
-client = pymongo.MongoClient(con_str)
+client = pymongo.MongoClient("mongodb://localhost:27017")
 
 
 def get_collection(coll_name: str):
