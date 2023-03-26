@@ -1,14 +1,12 @@
 import os
 import random
-from discord import (
-    User,
-    File
-)
-from easy_pil import (
-    Editor,
-    Canvas,
-    Font,
-)
+
+from discord import User
+from discord import File
+
+from easy_pil import Editor
+from easy_pil import Canvas
+from easy_pil import Font
 
 
 def level_card(member: User, user_data, guild_id, avatar_url) -> File:
