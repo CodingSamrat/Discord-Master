@@ -6,6 +6,7 @@ from DMaster.utils import get_user_guilds
 from DMaster.database import Collection
 from DMaster.database import get_collection
 from DMaster.cards import level_card
+from DMaster.cards import level_up_card
 
 from easy_pil import load_image_async
 
@@ -75,7 +76,12 @@ class LevelSystem(commands.Cog):
 
             col_users.update_one({"_id": user_id}, {"$set": {"guilds": user_guilds}})
 
-            await message.channel.send("LEVEL UP!")
+            #: Level up card
+            avatar_url = await load_image_async(str(message.author.avatar.url))
+            file = level_up_card(user_name, guild_name, current_lvl, avatar_url)
+            LOG.debug(TEXT="done")
+            await message.channel.send(f"Congratulations {message.author.mention}```Level Up! \n{current_lvl-1} -> {current_lvl}```")
+            await message.author.send(file=file)
         else:
             await col_users.update_one({"_id": user_id}, {"$set": {"guilds": user_guilds}})
 
