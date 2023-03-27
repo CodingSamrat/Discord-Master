@@ -2,6 +2,7 @@ import random
 import os
 
 from DMaster.utils import LOG
+from DMaster.utils import get_status
 from DMaster.utils import get_user_guilds
 from DMaster.database import Collection
 from DMaster.database import get_collection
@@ -12,9 +13,8 @@ from easy_pil import load_image_async
 
 from discord.ext import commands
 from discord.ext.commands.context import Context
-from discord import (
-    User
-)
+from discord import Embed
+from discord import User
 
 
 def get_rand_exp() -> int:
@@ -40,55 +40,57 @@ class LevelSystem(commands.Cog):
         if message.author.id == self.client.user.id:
             return
 
-        #: Initiating database (user) collection
-        col_users = get_collection(Collection.USER)
 
         user_id = str(message.author.id)
         user_name = message.author.name
         guild_id = str(message.guild.id)
         guild_name = message.guild.name
 
+        #: Initiating database (user) collection
         col_users = get_collection(Collection.USER)
         users = col_users.find_one({"_id": user_id})
 
         user_guilds = get_user_guilds(users, user_id, user_name, guild_id, guild_name)
 
-        rand_exp = get_rand_exp()
-        user_guilds[guild_id]["guild_exp"] += rand_exp
+        guild = get_collection(Collection.GUILD).find_one({"_id": guild_id})
+        guild_config = guild["config"]
+        if "level" in guild_config.keys():
+            if guild_config["level"]:
+                rand_exp = get_rand_exp()
+                user_guilds[guild_id]["guild_exp"] += rand_exp
 
-        current_lvl = user_guilds[guild_id]["guild_lvl"]
-        current_exp = user_guilds[guild_id]["guild_exp"]
-        next_exp = user_guilds[guild_id]["next_exp"]
+                current_lvl = user_guilds[guild_id]["guild_lvl"]
+                current_exp = user_guilds[guild_id]["guild_exp"]
+                next_exp = user_guilds[guild_id]["next_exp"]
 
-        #: Checking if level up
-        if current_exp >= next_exp:
-            current_lvl += 1
-            current_exp = 0
+                #: Checking if level up
+                if current_exp >= next_exp:
+                    current_lvl += 1
+                    current_exp = 0
 
-            if current_lvl == 2:
-                next_exp = 50
-            elif current_lvl >= 3:
-                next_exp += 50
+                    if current_lvl == 2:
+                        next_exp = 50
+                    elif current_lvl >= 3:
+                        next_exp += 50
 
-            user_guilds[guild_id]["guild_lvl"] = current_lvl
-            user_guilds[guild_id]["guild_exp"] = current_exp
-            user_guilds[guild_id]["next_exp"] = next_exp
+                    user_guilds[guild_id]["guild_lvl"] = current_lvl
+                    user_guilds[guild_id]["guild_exp"] = current_exp
+                    user_guilds[guild_id]["next_exp"] = next_exp
 
-            col_users.update_one({"_id": user_id}, {"$set": {"guilds": user_guilds}})
+                    col_users.update_one({"_id": user_id}, {"$set": {"guilds": user_guilds}})
 
-            #: Level up card
-            avatar_url = await load_image_async(str(message.author.avatar.url))
-            file = level_up_card(user_name, guild_name, current_lvl, avatar_url)
-            LOG.debug(TEXT="done")
-            await message.channel.send(f"Congratulations {message.author.mention}```Level Up! \n{current_lvl-1} -> {current_lvl}```")
-            await message.author.send(file=file)
-        else:
-            await col_users.update_one({"_id": user_id}, {"$set": {"guilds": user_guilds}})
+                    #: Level up card
+                    avatar_url = await load_image_async(str(message.author.avatar.url))
+                    file = level_up_card(user_name, guild_name, current_lvl, avatar_url)
+                    LOG.debug(TEXT="done")
+                    await message.channel.send(f"Congratulations {message.author.mention}```Level Up! \n{current_lvl-1} -> {current_lvl}```")
+                    await message.author.send(file=file)
+                else:
+                    await col_users.update_one({"_id": user_id}, {"$set": {"guilds": user_guilds}})
 
     #: write commands here
     #:
     #: Level
-    #:
     @commands.command(aliases=["rank", "lvl"])
     async def level(self, ctx: Context, user: User = None):
         member = ctx.author
@@ -109,6 +111,121 @@ class LevelSystem(commands.Cog):
         except Exception as e:
             print(e)
 
+    #: Level System
+    #:
+    @commands.group(name="level-system", invoke_without_command=True)
+    @commands.has_permissions(administrator=True)
+    async def level_system(self, ctx: Context):
+        guild = get_collection(Collection.GUILD).find_one({"_id": str(ctx.guild.id)})
+        prefix = guild["config"]["prefix"]
+
+        cmds = f"""
+                -  _`init`_: Initialize Level System
+                -  _`enable`_: Enable Level System
+                -  _`disable`_: Disable Level System
+                -  _`status`_: show Level System status
+                """
+
+        embed = Embed(title="Level System commands-", color=ctx.author.color)
+        embed.add_field(name=f"_{prefix}level-system", value=cmds, inline=False)
+
+        await ctx.send(embed=embed)
+
+    @level_system.command()
+    @commands.has_permissions(administrator=True)
+    async def init(self, ctx: Context):
+        guild_id = str(ctx.guild.id)
+        query = {"_id": guild_id}
+
+        #: Initiate database
+        col_guild = get_collection(Collection.GUILD)
+
+        #: Fetching database
+        guild = col_guild.find_one(query)
+
+        #: Guild Configuration
+        guild_config = guild["config"]
+
+        #: Check if Level already initiated
+        if "level" in guild_config.keys():
+            await ctx.send(f"> Level System already initiated.\n Use `{guild_config['prefix']}level` for more")
+
+        elif "level" not in guild_config.keys():
+            guild_config["level"] = True
+
+            col_guild.update_one(query, {"$set": {"config": guild_config}})
+            await ctx.send("> Level System initiated")
+
+    @level_system.command()
+    @commands.has_permissions(administrator=True)
+    async def enable(self, ctx: Context):
+        guild_id = str(ctx.guild.id)
+        query = {"_id": guild_id}
+
+        #: Initiate database
+        col_guild = get_collection(Collection.GUILD)
+
+        #: Fetching database
+        guild = col_guild.find_one(query)
+
+        #: Guild Configuration
+        guild_config = guild["config"]
+
+        if "level" in guild_config.keys():
+            guild_config["level"] = True
+
+            get_collection(Collection.GUILD).update_one(query, {"$set": {"config": guild_config}})
+            await ctx.send("> Level System enabled successfully")
+
+        else:
+            await ctx.send(f"> Level System is not initiated.\nPlease initiate it first.\n - Try {guild_config['prefix']}level-system")
+
+    @level_system.command()
+    @commands.has_permissions(administrator=True)
+    async def disable(self, ctx: Context):
+        guild_id = str(ctx.guild.id)
+        query = {"_id": guild_id}
+
+        #: Initiate database
+        col_guild = get_collection(Collection.GUILD)
+
+        #: Fetching database
+        guild = col_guild.find_one(query)
+
+        #: Guild Configuration
+        guild_config = guild["config"]
+
+        if "level" in guild_config.keys():
+            guild_config["level"] = False
+
+            get_collection(Collection.GUILD).update_one(query, {"$set": {"config": guild_config}})
+
+            await ctx.send("> Level System disabled successfully")
+
+        else:
+            await ctx.send(f"> Level System is not initiated.\nPlease initiate it first.\n - Try {guild_config['prefix']}level-system")
+
+    @level_system.command()
+    @commands.has_permissions(administrator=True)
+    async def status(self, ctx: Context):
+        guild_id = str(ctx.guild.id)
+        query = {"_id": guild_id}
+
+        #: Initiate database
+        #: Fetching database
+        col_guild = get_collection(Collection.GUILD)
+        guild = col_guild.find_one(query)
+
+        #: Guild Configuration
+        guild_config = guild["config"]
+
+        if "level" in guild_config.keys():
+            embed = Embed(title="Level System Status-", color=ctx.author.color)
+            embed.add_field(name=get_status(guild_config["level"]), value="", inline=False)
+
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"> Level System is not initiated.\nPlease initiate it first.\n - Try {guild_config['prefix']}level-system")
 
 
 async def setup(client):
