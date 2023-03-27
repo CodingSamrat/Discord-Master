@@ -59,7 +59,12 @@ class RoleManager(commands.Cog):
         guild_verify["channel_name"] = str(channel_name)
 
         col_guild.update_one(query, {"$set": {"verify": guild_verify}})
-        await ctx.send(f"> Welcome Channel id ```{channel_id}```")
+
+        embed = Embed(title="Verification System Channel -\nSetup Successful!", color=ctx.author.color)
+        embed.add_field(name="ID: ", value=channel_id, inline=False)
+        embed.add_field(name="Name: ", value=channel_name, inline=False)
+
+        await ctx.send(embed=embed)
 
     @verify.command()
     @commands.has_permissions(administrator=True)
@@ -78,7 +83,11 @@ class RoleManager(commands.Cog):
         guild_verify["role_name"] = str(role_name)
 
         col_guild.update_one(query, {"$set": {"verify": guild_verify}})
-        await ctx.send(f"> Verification System Role  ```id => {role_id} ```\n```name => {role_name}```")
+        embed = Embed(title="Verification System Role -\nSetup Successful!", color=ctx.author.color)
+        embed.add_field(name="ID: ", value=role_id, inline=False)
+        embed.add_field(name="Name: ", value=role_name, inline=False)
+
+        await ctx.send(embed=embed)
 
     @verify.command()
     @commands.has_permissions(administrator=True)
@@ -97,7 +106,10 @@ class RoleManager(commands.Cog):
 
         #: Check if verify already initiated
         if "verify" in guild_config.keys():
-            await ctx.send(f"> Verification System already initiated.\n Use `{guild_config['prefix']}verify` for more")
+            embed = Embed(title="Verification System is already initiated ", color=ctx.author.color)
+            embed.add_field(name=f"Try `{guild_config['prefix']}verify` for more", value="", inline=False)
+
+            await ctx.send(embed=embed)
 
         elif "verify" not in guild_config.keys():
             guild_config["verify"] = True
@@ -110,7 +122,7 @@ class RoleManager(commands.Cog):
             }
 
             col_guild.update_one(query, {"$set": {"config": guild_config, "verify": guild_verify}})
-            await ctx.send("> Verification System initiated successfully")
+            await ctx.send("```Verification System initiated successfully```")
 
     @verify.command()
     @commands.has_permissions(administrator=True)
@@ -131,11 +143,13 @@ class RoleManager(commands.Cog):
             guild_config["verify"] = True
 
             get_collection(Collection.GUILD).update_one(query, {"$set": {"config": guild_config}})
-            await ctx.send("> Level System enabled successfully")
+            await ctx.send("```Verification System enabled successfully```")
 
         else:
-            await ctx.send(
-                f"> Verification System is not initiated.\nPlease initiate it first.\n - Try {guild_config['prefix']}verify")
+            embed = Embed(title="Verification System is not initiated\nPlease initiate it first", color=ctx.author.color)
+            embed.add_field(name=f"Try `{guild_config['prefix']}verify init`", value="", inline=False)
+
+            await ctx.send(embed=embed)
 
     @verify.command()
     @commands.has_permissions(administrator=True)
@@ -157,10 +171,13 @@ class RoleManager(commands.Cog):
 
             get_collection(Collection.GUILD).update_one(query, {"$set": {"config": guild_config}})
 
-            await ctx.send("> Level System disabled successfully")
+            await ctx.send("```Verification System disabled successfully```")
 
         else:
-            await ctx.send(f"> Verification System is not initiated.\nPlease initiate it first.\n - Try {guild_config['prefix']}verify")
+            embed = Embed(title="Verification System is not initiated\nPlease initiate it first", color=ctx.author.color)
+            embed.add_field(name=f"Try `{guild_config['prefix']}verify init`", value="", inline=False)
+
+            await ctx.send(embed=embed)
 
     @verify.command()
     @commands.has_permissions(administrator=True)
@@ -178,13 +195,16 @@ class RoleManager(commands.Cog):
 
         if "verify" in guild_config.keys():
             embed = Embed(title="Verification System Status-", color=ctx.author.color)
-            embed.add_field(name=get_status(guild_config["level"]), value="", inline=False)
+            embed.add_field(name=get_status(guild_config["verify"]), value="", inline=False)
 
             await ctx.send(embed=embed)
         else:
-            await ctx.send(f"> Verification System is not initiated.\nPlease initiate it first.\n - Try {guild_config['prefix']}verify")
+            embed = Embed(title="Verification System is not initiated\nPlease initiate it first", color=ctx.author.color)
+            embed.add_field(name=f"Try `{guild_config['prefix']}verify init`", value="", inline=False)
+
+            await ctx.send(embed=embed)
 
 
 async def setup(client):
-    await client.add_cog(RoleManager(client))  # <- Change ->
+    await client.add_cog(RoleManager(client))
 
