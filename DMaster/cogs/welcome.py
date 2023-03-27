@@ -1,5 +1,7 @@
 import discord.utils
 from discord import Member
+from discord import Embed
+from discord import Color
 from discord import ui
 from discord.ext import commands
 from discord.ext.commands.context import Context
@@ -111,7 +113,7 @@ class Welcome(commands.Cog):
 
         #: Send Bye message
         await channel.send(f"Bye {member.mention}")
-        await member.send("By By bY")
+        # await member.send("By By bY")
 
     #: write commands here
     #:
@@ -120,6 +122,32 @@ class Welcome(commands.Cog):
     @commands.group(name="welcome", invoke_without_command=True)
     @commands.has_permissions(administrator=True)
     async def welcome(self, ctx: Context):
+        guild = get_collection(Collection.GUILD).find_one({"_id": str(ctx.guild.id)})
+        prefix = guild["config"]["prefix"]
+
+        cmds = f"""
+        -  _`channel`_: Set welcome message channel
+        -  _`message`_: Set a short message for new member
+        -  _`enable`_: Enable welcome message
+        -  _`disable`_: Disable welcome message
+        -  _`status`_: show welcome message status
+        """
+        example = f"""
+    {prefix}welcome channel 1234567890123
+    {prefix}welcome message Welcome to D-Master community
+"""
+        embed = Embed(title="Welcome message commands-", color=ctx.author.color)
+        embed.add_field(name=f"_{prefix}welcome_", value=cmds, inline=False)
+        # embed.add_field(name=f"Example", value=example, inline=False)
+
+        await ctx.send(embed=embed)
+
+
+
+
+    @welcome.command()
+    @commands.has_permissions(administrator=True)
+    async def init(self, ctx: Context):
         guild_id = str(ctx.guild.id)
         query = {"_id": guild_id}
 
@@ -136,7 +164,7 @@ class Welcome(commands.Cog):
         if "welcome" in guild.keys():
             await ctx.send(">>> Welcome message settings updated")
 
-        elif"welcome" not in guild.keys():
+        elif "welcome" not in guild.keys():
             guild_config["welcome"] = True
 
             guild_welcome = {
