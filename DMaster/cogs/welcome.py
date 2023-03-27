@@ -126,24 +126,18 @@ class Welcome(commands.Cog):
         prefix = guild["config"]["prefix"]
 
         cmds = f"""
-        -  _`channel`_: Set welcome message channel
-        -  _`message`_: Set a short message for new member
-        -  _`enable`_: Enable welcome message
-        -  _`disable`_: Disable welcome message
-        -  _`status`_: show welcome message status
-        """
-        example = f"""
-    {prefix}welcome channel 1234567890123
-    {prefix}welcome message Welcome to D-Master community
-"""
+                -  _`init`_: Initialize welcome message System
+                -  _`channel`_: Set welcome message channel
+                -  _`message`_: Set a short message for new member
+                -  _`enable`_: Enable welcome message
+                -  _`disable`_: Disable welcome message
+                -  _`status`_: show welcome message status
+                """
+
         embed = Embed(title="Welcome message commands-", color=ctx.author.color)
         embed.add_field(name=f"_{prefix}welcome_", value=cmds, inline=False)
-        # embed.add_field(name=f"Example", value=example, inline=False)
 
         await ctx.send(embed=embed)
-
-
-
 
     @welcome.command()
     @commands.has_permissions(administrator=True)
@@ -199,7 +193,7 @@ class Welcome(commands.Cog):
 
         col_guild.update_one(query, {"$set": {"welcome": guild_welcome}})
         print(5)
-        await ctx.send(f">>> Welcome Channel id => {channel_id}")
+        await ctx.send(f"> Welcome Channel id ```{channel_id}```")
 
     @welcome.command()
     @commands.has_permissions(administrator=True)
@@ -210,7 +204,7 @@ class Welcome(commands.Cog):
 
         #: Checking Welcome message length
         if msg_len > 50:
-            await ctx.send(f">>> Welcome message Should be 50 characters. ```Given message length {msg_len}```")
+            await ctx.send(f"> Welcome message Should be 50 characters. ```Given message length {msg_len}```")
             return
 
         #: Initiate database
@@ -223,7 +217,7 @@ class Welcome(commands.Cog):
         guild_welcome["msg"] = str(message)
 
         col_guild.update_one(query, {"$set": {"welcome": guild_welcome}})
-        await ctx.send(f">>> Welcome message set => ```{message}```")
+        await ctx.send(f"> Welcome message set ```{message}```")
 
     @welcome.command()
     @commands.has_permissions(administrator=True)
@@ -239,10 +233,16 @@ class Welcome(commands.Cog):
 
         #: Guild Configuration
         guild_config = guild["config"]
-        guild_config["welcome"] = True
 
-        get_collection(Collection.GUILD).update_one(query, {"$set": {"config": guild_config}})
-        await ctx.send(">>> Welcome msg enabled successfully")
+        if "welcome" in guild_config.keys():
+            guild_config["welcome"] = True
+
+            get_collection(Collection.GUILD).update_one(query, {"$set": {"config": guild_config}})
+
+            await ctx.send("> Welcome System disabled successfully")
+
+        else:
+            await ctx.send(f"> Welcome System is not initiated.\nPlease initiate it first.\n - Try {guild_config['prefix']}welcome")
 
     @welcome.command()
     @commands.has_permissions(administrator=True)
@@ -258,11 +258,15 @@ class Welcome(commands.Cog):
 
         #: Guild Configuration
         guild_config = guild["config"]
-        guild_config["welcome"] = False
+        if "welcome" in guild_config.keys():
+            guild_config["welcome"] = False
 
-        get_collection(Collection.GUILD).update_one(query, {"$set": {"config": guild_config}})
+            get_collection(Collection.GUILD).update_one(query, {"$set": {"config": guild_config}})
 
-        await ctx.send(">>> Welcome msg disabled successfully")
+            await ctx.send("> Welcome System disabled successfully")
+
+        else:
+            await ctx.send(f"> Welcome System is not initiated.\nPlease initiate it first.\n - Try {guild_config['prefix']}welcome")
 
     @welcome.command()
     @commands.has_permissions(administrator=True)
@@ -278,20 +282,23 @@ class Welcome(commands.Cog):
 
         #: Guild Configuration
         guild_config = guild["config"]
-        guild_welcome = guild["welcome"]
+        if "welcome" in guild_config.keys():
+            guild_welcome = guild["welcome"]
 
-        msg = f"""
-```
-Welcome message - {ctx.guild.name}.
+            msg = f"""
+    ```
+    Welcome message - {ctx.guild.name}.
+    
+        - Status: {get_status(guild_config["welcome"])}
+        - Channel Name: {guild_welcome["channel_name"]}
+        - Channel ID: {guild_welcome["channel_id"]}
+        - Message: {guild_welcome["msg"]}
+    ```
+                """
 
-    - Status: {get_status(guild_config["welcome"])}
-    - Channel Name: {guild_welcome["channel_name"]}
-    - Channel ID: {guild_welcome["channel_id"]}
-    - Message: {guild_welcome["msg"]}
-```
-            """
-
-        await ctx.send(msg)
+            await ctx.send(msg)
+        else:
+            await ctx.send(f"> Welcome System is not initiated.\nPlease initiate it first.\n - Try {guild_config['prefix']}welcome")
 
 
 
