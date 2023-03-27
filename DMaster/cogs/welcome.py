@@ -175,24 +175,18 @@ class Welcome(commands.Cog):
     async def channel(self, ctx: Context, channel_id):
         guild_id = str(ctx.guild.id)
         query = {"_id": guild_id}
-        print(0)
         channel_name = ctx.guild.get_channel(int(channel_id)).name
-        print(1)
         #: Initiate database
         col_guild = get_collection(Collection.GUILD)
-        print(2)
 
         #: Fetching database
         guild = col_guild.find_one(query)
 
-        print(3)
         guild_welcome = guild["welcome"]
         guild_welcome["channel_id"] = str(channel_id)
         guild_welcome["channel_name"] = str(channel_name)
-        print(4)
 
         col_guild.update_one(query, {"$set": {"welcome": guild_welcome}})
-        print(5)
         await ctx.send(f"> Welcome Channel id ```{channel_id}```")
 
     @welcome.command()
