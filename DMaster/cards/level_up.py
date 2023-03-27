@@ -27,7 +27,7 @@ def level_up_card(user_name, guild_name, level, avatar_url) -> File:
     #: Parameters
     #:
     #: Font Styles & Colors----------------------------------------
-    color_main = "#ff8846"
+    color_bg = "#ff8846"
     color_basic = "#FFFFFF"
     color_sec = "#00d2fe"
 
@@ -45,7 +45,7 @@ def level_up_card(user_name, guild_name, level, avatar_url) -> File:
     avatar_pos_x = int((main_w - (avatar_size + avatar_pos_y)))
 
     avatar = Editor(avatar_url).resize((avatar_size, avatar_size)).circle_image()
-    avatar_bg = Editor(Canvas((avatar_bg_size, avatar_bg_size), color=color_main)).circle_image()
+    avatar_bg = Editor(Canvas((avatar_bg_size, avatar_bg_size), color=color_bg)).circle_image()
 
     background.paste(avatar_bg, (avatar_pos_x - 5, avatar_pos_y - 5))
     background.paste(avatar, (avatar_pos_x, avatar_pos_y))
@@ -60,11 +60,11 @@ def level_up_card(user_name, guild_name, level, avatar_url) -> File:
     lvl_up_y = 175
 
     coordinates = [(0, t), (0, b), (rb, b), (rt, t)]
-    background.polygon(coordinates, color=color_main)
+    background.polygon(coordinates, color=color_bg)
 
     background.text((lvl_up_x, lvl_up_y), f"Level Up!!! ", font=poppins_h2, color=color_basic)
-    background.rectangle((lvl_up_x - 35, lvl_up_y + 50), width=300, height=1, fill=color_main)
-    background.rectangle((lvl_up_x - 40, lvl_up_y + 53), width=300, height=1, fill=color_main)
+    background.rectangle((lvl_up_x - 35, lvl_up_y + 50), width=300, height=1, fill=color_bg)
+    background.rectangle((lvl_up_x - 40, lvl_up_y + 53), width=300, height=1, fill=color_bg)
 
     background.text((190, 260), f"{level}", font=poppins_h1, color="#282c34", align="center")
 
