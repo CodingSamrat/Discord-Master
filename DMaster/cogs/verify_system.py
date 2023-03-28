@@ -1,4 +1,3 @@
-import discord
 
 from DMaster.utils import LOG
 from DMaster.utils import get_status
@@ -7,18 +6,19 @@ from DMaster.database import get_collection
 
 from discord.ext import commands
 from discord.ext.commands.context import Context
-from discord.ui import Button, button
+from discord.ui import button
 from discord.ui import View
 from discord import Embed
 from discord import Interaction
 from discord import Color
+from discord import ButtonStyle
 
 
 class VerifyButton(View):
     def __int__(self):
         super().__int__(timeout=None)
 
-    @button(label="Verify", style=discord.ButtonStyle.green, emoji="✅")
+    @button(label="Verify", style=ButtonStyle.green, emoji="✅")
     async def verify_button(self, interaction: Interaction, button):
         user = interaction.user
 
