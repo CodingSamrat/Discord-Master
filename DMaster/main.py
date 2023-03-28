@@ -111,7 +111,7 @@ async def on_guild_remove(guild: Guild):
 async def load_cogs() -> None:
     """ Loading `Cogs` """
 
-    cog_ignore_list = ["__init__.py", "_welcome.py"]
+    cog_ignore_list = ["__init__.py", "music.py"]
     for filename in os.listdir("DMaster/cogs"):
         if filename in cog_ignore_list:
             LOG.warning(TEXT=f"{filename} - ignored")
