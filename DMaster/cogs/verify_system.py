@@ -91,17 +91,17 @@ class Verification(commands.Cog):
         prefix = guild["config"]["prefix"]
 
         cmds = f"""
-                -  _`init`_: Initialize Verification System
-                -  _`channel`_: Set Verification Channel
-                -  _`role`_: Set Verified Role
-                -  _`start`_: Generate verify button with message
-                -  _`enable`_: Enable Verification System
-                -  _`disable`_: Disable Verification System
-                -  _`status`_: show Level Verification status
+                -  **`init`**: Initialize Verification System
+                -  **`channel`**: Set Verification Channel
+                -  **`role`**: Set Verified Role
+                -  **`start`**: Generate verify button with message
+                -  **`enable`**: Enable Verification System
+                -  **`disable`**: Disable Verification System
+                -  **`status`**: show Level Verification status
                 """
 
         embed = Embed(title="Verification System commands -", color=ctx.author.color)
-        embed.add_field(name=f"_{prefix}verify_", value=cmds, inline=False)
+        embed.add_field(name=f"**`{prefix}verify`**", value=cmds, inline=False)
 
         await ctx.send(embed=embed)
 

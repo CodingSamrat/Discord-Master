@@ -126,16 +126,16 @@ class Welcome(commands.Cog):
         prefix = guild["config"]["prefix"]
 
         cmds = f"""
-                -  _`init`_: Initialize welcome message System
-                -  _`channel`_: Set welcome message channel
-                -  _`message`_: Set a short message for new member
-                -  _`enable`_: Enable welcome message
-                -  _`disable`_: Disable welcome message
-                -  _`status`_: show welcome message status
+                -  **`init`**: Initialize welcome message System
+                -  **`channel`**: Set welcome message channel
+                -  **`message`**: Set a short message for new member
+                -  **`enable`**: Enable welcome message
+                -  **`disable`**: Disable welcome message
+                -  **`status`**: show welcome message status
                 """
 
         embed = Embed(title="Welcome message commands-", color=ctx.author.color)
-        embed.add_field(name=f"_{prefix}welcome_", value=cmds, inline=False)
+        embed.add_field(name=f"**`{prefix}welcome`**", value=cmds, inline=False)
 
         await ctx.send(embed=embed)
 
